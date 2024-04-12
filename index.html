@@ -40,7 +40,32 @@
     </div>
   </div>
   <script src="script.js"></script>
-  <script type="module" src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+  <script>
+          // Import the functions you need from the SDKs you need
+      import { initializeApp } from "firebase/app";
+      import { getAnalytics } from "firebase/analytics";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyAQ3KfLc2AwVzKDjiWAOGPCsn2LJdGjWYw",
+        authDomain: "classement-gambling-school.firebaseapp.com",
+        databaseURL: "https://classement-gambling-school-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "classement-gambling-school",
+        storageBucket: "classement-gambling-school.appspot.com",
+        messagingSenderId: "186220470885",
+        appId: "1:186220470885:web:ce315234b171de80751c8c",
+        measurementId: "G-R26SHW2B13"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+  </script>
 
 </body>
 </html>

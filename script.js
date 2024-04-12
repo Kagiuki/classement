@@ -1,41 +1,85 @@
-// Référence à la collection "leaderboard" dans la base de données
-const leaderboardRef = firebase.database().ref('leaderboard');
+let participants = [];
+const adminPassword = "gambling";
 
-// Ajouter un joueur au classement
-function addPlayer() {
+// Initialiser la référence à la base de données Firebase
+const database = firebase.database();
+const participantsRef = database.ref('participants');
+
+// Récupérer les données de Firebase
+participantsRef.on('value', (snapshot) => {
+  participants = snapshot.val() || [];
+  updateLeaderboard();
+});
+
+const participantForm = document.getElementById('participantForm');
+participantForm.addEventListener('submit', addParticipant);
+
+function addParticipant(event) {
+  event.preventDefault();
   const pseudo = document.getElementById('pseudo').value;
   const jetons = parseInt(document.getElementById('jetons').value);
+  participants.push({ pseudo, jetons });
+  participants.sort((a, b) => b.jetons - a.jetons);
+  updateLeaderboard();
+  saveParticipants();
+  participantForm.reset();
+}
 
-  if (pseudo && !isNaN(jetons)) {
-    const player = { pseudo, jetons };
-    leaderboardRef.push(player);
-    document.getElementById('pseudo').value = '';
-    document.getElementById('jetons').value = '';
+function updateLeaderboard() {
+  const leaderboard = document.querySelector('#leaderboard tbody');
+  leaderboard.innerHTML = '';
+  participants.forEach((participant, index) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td><input type="text" value="${participant.pseudo}" onchange="updatePseudo(${index}, this.value)"></td>
+      <td>${participant.jetons}</td>
+      <td class="actions">
+        <button onclick="editParticipant(${index})">Modifier</button>
+        <button onclick="removeParticipant(${index})">Supprimer</button>
+      </td>
+    `;
+    leaderboard.appendChild(row);
+  });
+}
+
+function updatePseudo(index, newPseudo) {
+  participants[index].pseudo = newPseudo;
+  saveParticipants();
+}
+
+function editParticipant(index) {
+  const newJetons = parseInt(prompt("Entrez le nouveau nombre de jetons :"));
+  if (!isNaN(newJetons)) {
+    participants[index].jetons = newJetons;
+    participants.sort((a, b) => b.jetons - a.jetons);
+    updateLeaderboard();
+    saveParticipants();
   }
 }
 
-// Mettre à jour le classement en temps réel
-leaderboardRef.on('value', (snapshot) => {
-  const leaderboard = snapshot.val();
-  updateLeaderboard(leaderboard);
-});
-
-// Fonction pour mettre à jour l'affichage du classement
-function updateLeaderboard(leaderboard) {
-  // Code pour mettre à jour le tableau du classement
+function removeParticipant(index) {
+  const confirmDelete = confirm("Voulez-vous vraiment supprimer ces données ?");
+  if (confirmDelete) {
+    participants.splice(index, 1);
+    updateLeaderboard();
+    saveParticipants();
+  }
 }
 
-const firebaseConfig = {
-apiKey: "AIzaSyAQ3KfLc2AwVzKDjiWAOGPCsn2LJdGjWYw",
-authDomain: "classement-gambling-school.firebaseapp.com",
-databaseURL: "https://classement-gambling-school-default-rtdb.europe-west1.firebasedatabase.app",
-projectId: "classement-gambling-school",
-storageBucket: "classement-gambling-school.appspot.com",
-messagingSenderId: "186220470885",
-appId: "1:186220470885:web:ce315234b171de80751c8c",
-measurementId: "G-R26SHW2B13"
-};
+function saveParticipants() {
+  participantsRef.set(participants);
+}
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// Générer le QR code
+const qrCodeUrl = window.location.href; // URL de votre site web
+const qrCodeElement = document.getElementById('qrcode');
+
+new QRCode(qrCodeElement, {
+  text: qrCodeUrl,
+  width: 200,
+  height: 200,
+  colorDark: '#000000',
+  colorLight: '#ffffff',
+  correctLevel: QRCode.CorrectLevel.H
+});
